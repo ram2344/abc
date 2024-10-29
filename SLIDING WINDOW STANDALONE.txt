@@ -1,0 +1,78 @@
+SLIDING WINDOW STANDALONE
+
+#include<stdio.h>
+#include<stdlib.h>
+#include<string.h>
+int RWS=3,SWS=3,LFS=0,LAR=0,LAF=3,LFR=0;
+int i=1,k=1;
+int exp=1;
+int rw[100]={0};
+int sw[100]={0};
+int receive(int pack){
+    if(LAF-LFR<=RWS){
+        if(pack>LAF||pack<=LFR){
+            printf("Packet %d is out of receiving window\n",pack);
+            return 0;
+        }
+        else{
+            rw[pack]=pack;
+            if(pack==exp){
+                LFR=pack;
+                int last=0;
+                for(int j=k;j<RWS+k;j++){
+                    if(rw[j]==j){
+                        last=j;
+                    }
+                    else{
+                        break;
+                    }
+                }
+                if(exp<last){
+                    exp=last;
+                    LFR=exp;
+                }
+                exp++;
+                LAF=LFR+RWS;
+                k=1+LFR;
+                printf("Packet %d received!\n",pack);
+                return LFR;
+            }
+            else{
+                printf("Packet %d received!\n",pack);
+                return 0;
+            }
+        }
+    }
+    return 0;
+}
+int main(){
+    int pack;
+    while(LFS-LAR<=SWS){
+        if(LFS==LAR+SWS){
+            for(int j=i;j<i+SWS;j++){
+                if(sw[j]==0){
+                    printf("Packet %d is missing\n",j);
+                    break;
+                }
+            }
+        }
+        printf("Enter packet number:");
+        scanf("%d",&pack);
+        if(pack-LAR<=SWS){
+            sw[pack]=pack;
+            if(LFS<pack){
+                LFS=pack;
+            }
+        }
+        int ack=receive(pack);
+        if(ack==0){
+            continue;
+        }
+        else{
+            LAR=ack;
+            i=LAR+1;
+            printf("Acknowledgement received for %d packet\n",ack);
+        }
+    }
+    return 0;
+}
